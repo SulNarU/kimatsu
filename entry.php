@@ -37,6 +37,45 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
 }
 
+<?php
+session_start();
+require_once("functions.php");
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+   if(!empty($_POST)){
+        $email = htmlspecialchars($_SESSION['join']['email'], ENT_QUOTES, 'UTF-8');
+        $user = htmlspecialchars($_SESSION['join']['name'], ENT_QUOTES, 'UTF-8');
+        $password = password_hash($_SESSION['join']['password'],PASSWORD_DEFAULT);
+        $picture = htmlspecialchars($_SESSION['join']['image'], ENT_QUOTES, 'UTF-8');
+
+        $dbh = db_conn();
+        try{
+   	        $sql = 'INSERT INTO members SET email=:email,user=:name,password=:password,picture=:picture,createdate=NOW()';
+            $stmt = $dbh->prepare($sql);
+            $stmt->bindValue(':email', $email, PDO::PARAM_STR);
+            $stmt->bindValue(':name', $user, PDO::PARAM_STR);
+            $stmt->bindValue(':password', $password, PDO::PARAM_STR);
+            $stmt->bindValue(':picture', $picture, PDO::PARAM_STR);
+            $stmt->execute();
+	        unset($_SESSION['join']);
+	        header('Location: thanks.php');
+	        exit();
+        }catch (PDOException $e){
+            echo($e->getMessage());
+            die();
+        }
+    }
+} else {
+    if (!isset($_SESSION['join'])) {
+        header('Location: input.php');
+        exit();
+    } else {
+        $email = htmlspecialchars($_SESSION['join']['email'], ENT_QUOTES, 'UTF-8');
+        $user = htmlspecialchars($_SESSION['join']['name'], ENT_QUOTES, 'UTF-8');
+        $password = password_hash($_SESSION['join']['password'],PASSWORD_DEFAULT);
+        $picture = htmlspecialchars($_SESSION['join']['image'], ENT_QUOTES, 'UTF-8');
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
